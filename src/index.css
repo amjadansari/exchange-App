@@ -1,0 +1,13 @@
+@import '~semantic-ui-css/semantic.min.css';
+
+
+html,
+body {
+  height: 100%; /* for browsers that don't support vh units */
+  height: 100vh;
+}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
