@@ -1,12 +1,11 @@
 import React from "react";
 import {observer, inject} from 'mobx-react';
-import { toCurrencyString, hasClass } from "./utils/utils";
+import { toCurrencyString, hasClass } from "../utils/utils";
 import Swipe from 'react-easy-swipe';
 
 import {
   List,
-  Input,
-  Icon
+  Input
 } from "semantic-ui-react";
 
 @inject("store")
@@ -127,14 +126,7 @@ class SliderPanel extends React.Component {
    renderCurrentRate() {
     const toRate = this.props.data.toValue;
     const frmoate = this.props.data.fromValue;
-    // console.log("this.store.exchangeFromRate", this.store.exchangeFromRate);
-    // console.log("this.store.exchangeToRate", this.store.exchangeToRate);
-    if (toRate == 0){
-      const toRate = 1;
-    }
-    if (frmoate == 0){
-      const frmoate = 1;
-    }
+
     return (
       <React.Fragment>
         {toCurrencyString(1, this.props.data.fromCurrencyCode)}

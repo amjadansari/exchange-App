@@ -2,7 +2,7 @@
 
 import React, { Component } from "react";
 import { observer } from "mobx-react";
-import SliderPanel from "./SliderPanel";
+import SliderPanel from "./components/SliderPanel";
 
 import {
   Message,
