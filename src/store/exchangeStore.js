@@ -9,7 +9,10 @@ class Store {
     fromCurrencyCode: "EUR",
     toCurrencyCode: "EUR",
     fromValue: 1,
-    toValue: 1
+    toValue: 1,
+    conversionError: false,
+    conversionSuccess: false,
+    conversionMsg: ""
   };
 
   @observable rates = [];
@@ -17,11 +20,11 @@ class Store {
   @persist('object') 
 
   @observable
-  wallets = {
-    GBP: 10000,
-    EUR: 10000,
-    USD: 10000,    
-  };
+    wallets = {
+      GBP: 10000,
+      EUR: 10000,
+      USD: 10000,    
+    };
 
   async fetchRates() {
     this.rates = {};
@@ -39,9 +42,22 @@ class Store {
   }
 
   @action
+  setConversionError(flag) {
+    this.state.conversionError = flag;
+  }
+  @action
+  setConversionSuccess(flag) {
+    this.state.conversionSuccess = flag;
+  }
+  @action
+  setConversionMsg(msg) {
+    this.state.conversionMsg = msg;
+  }
+
+  @action
   convertCurrency(fromValue, fromWallet, toValue, toWallet) {
-    this.wallets[fromWallet] -= fromValue;
-    this.wallets[toWallet] += toValue;
+    this.wallets[fromWallet] -= parseFloat(fromValue, 10);
+    this.wallets[toWallet] += parseFloat(toValue, 10);
   }
 
   @action
@@ -65,35 +81,56 @@ class Store {
   }
 
   /**
-   * When User update in from Field
+   * This function is called once the user clicks on the top exchange link on the screen and display message
+   * it validate if from Wallet have lesser amount then user have typed in input box
+   * it validate if user havn't entered any amount in the inputbox
+   * it validate if user have selected from & To wallet of same currency
    */
+
+  @action
+   exchangeCurrency (
+    fromValue: number,
+    fromWallet: string,
+    toValue: number,
+    toWallet: string
+  ): void {
+    this.setConversionError(false);
+    this.setConversionSuccess(false); 
+
+    if (this.wallets[fromWallet] - fromValue < 0) {
+      this.setConversionError(true);
+      this.state.conversionMsg = `You don't have enough balance in ${fromWallet} wallet!`;
+    } 
+    else if ((fromValue || toValue) && (fromWallet !== toWallet)){
+      this.convertCurrency(fromValue, fromWallet, toValue, toWallet);
+      this.setConversionSuccess(true);
+      this.state.conversionMsg = `Exchange to ${toWallet}`;
+    }
+    else if ((fromValue || toValue) && (fromWallet === toWallet)) {
+      this.setConversionError(true);
+      this.state.conversionMsg = `You can't transfer to same Wallet`;
+    }
+    else {
+      this.setConversionError(true);
+      this.state.conversionMsg = `please enter your desired amount to convert to ${toWallet}`;
+    }
+  }
+
+  /**
+   * When User update from Field
+   */
+
   @computed
   get exchangeToRate() {
     const value = this.state.fromValue;
     const fromCurrencyCode = this.state.fromCurrencyCode;
     const toCurrencyCode = this.state.toCurrencyCode;
     let result;
-    if (toCurrencyCode === "USD" && fromCurrencyCode === "USD") {
-
-      return value;
-    } else if (toCurrencyCode === "USD") {
-
-      result = value * this.rates[toCurrencyCode];
-
+    result = value / this.rates[fromCurrencyCode] * this.rates[toCurrencyCode];
       return result.toFixed(2);
-    } else if (fromCurrencyCode === "USD") {
-
-      result = value * this.rates[fromCurrencyCode];
-      return result.toFixed(2);
-    } else {
-
-      result =
-        value / this.rates[fromCurrencyCode] * this.rates[toCurrencyCode];
-      return result.toFixed(2);
-    }
   }
   /**
-   * When User update in To Field
+   * When User update To Field
    */
   @computed
   get exchangeFromRate() {
@@ -101,23 +138,8 @@ class Store {
     const toCurrencyCode = this.state.toCurrencyCode;
     const fromCurrencyCode = this.state.fromCurrencyCode;
     let result;
-    if (fromCurrencyCode === "USD" && toCurrencyCode === "USD") {
-
-      return value;
-    } else if (toCurrencyCode === "USD") {
-
-      result = value * this.rates[toCurrencyCode];
-      return result.toFixed(2);
-    } else if (fromCurrencyCode === "USD") {
-
-      result = value * this.rates[fromCurrencyCode];
-      return result.toFixed(2);
-    } else {
-
-      result =
-        value / this.rates[toCurrencyCode] * this.rates[fromCurrencyCode];
-      return result.toFixed(2);
-    }
+    result = value / this.rates[fromCurrencyCode] * this.rates[toCurrencyCode];
+    return result.toFixed(2);
   }
 } 
 const hydrate = create({

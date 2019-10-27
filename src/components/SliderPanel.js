@@ -1,6 +1,9 @@
+// This component renders the sliding Wallet along with the input filed.
+// If the user slide the wallet it changes the amount showing in the input box based on the currency and input box on the other slide
 import React from "react";
 import {observer, inject} from 'mobx-react';
 import { toCurrencyString, hasClass } from "../utils/utils";
+import CurrentExchangeRate from "../components/CurrentExchangeRate";
 import Swipe from 'react-easy-swipe';
 
 import {
@@ -21,11 +24,11 @@ class SliderPanel extends React.Component {
       onSwipeEnd: false,
       onSwipeDirection:''
      };
-     // this.prevSlide = this.prevSlide.bind(this);  
   }
   
   componentDidMount() {
   }
+
   onSwipeMove = (position, event) => {
     var toCurrency = hasClass(event.target, 'to-currency');
     if(position.x > 1 && this.state.onSwipeEnd){
@@ -95,48 +98,34 @@ class SliderPanel extends React.Component {
 
   clickIndicator = (e, value, panel) => {
     this.setCurrencyValue((panel === "to"), value);
-
-    // if (panel === "to") {
-    //   this.store.setToCurrency(value);
-    //   this.store.setToValue(this.store.exchangeToRate);
-    // }
-    // else {
-    //   this.store.setFromCurrency(value);
-    //   this.store.setFromValue(this.store.exchangeFromRate);
-    // }
     this.setState({
       activeIndex: parseInt(e.target.textContent,10),
     })
   }
 
-  updateOtherInput = (panel, value) => {
-    // const { store } = this.props;
-    if (panel === "from") {
-      console.log("change in", panel);
+  updateOtherInput = (panel, value, fromCurrencyCode) => {
+    const fromWalletValue = this.store.wallets[fromCurrencyCode];
+    if (panel === "from") { 
       this.store.setFromValue(value);
       this.store.setToValue(this.store.exchangeToRate);
     }
     else {
-      console.log("change in", panel);
       this.store.setToValue(value);
       this.store.setFromValue(this.store.exchangeFromRate);
     }
-  }
-
-   renderCurrentRate() {
-    const toRate = this.props.data.toValue;
-    const frmoate = this.props.data.fromValue;
-
-    return (
-      <React.Fragment>
-        {toCurrencyString(1, this.props.data.fromCurrencyCode)}
-          -
-        {toCurrencyString(toRate/frmoate, this.props.data.toCurrencyCode)}
-      </React.Fragment>
-    );
+    if (value > fromWalletValue) {
+       this.store.setConversionError(true);
+       this.store.setConversionMsg(`You don't have enough balance in ${fromCurrencyCode} Wallet`);
+    }
   }
   
   render () { 
+    const {
+      fromValue,
+      toValue,
+      fromCurrencyCode,
+      toCurrencyCode,
+    } = this.props.store.state;
     return (
         <Swipe
             onSwipeMove={this.onSwipeMove}
@@ -144,11 +133,10 @@ class SliderPanel extends React.Component {
           <div >
         <div  className="slider-wrapper">
         <List divided inverted verticalAlign='middle' className="slider">
-            {this.props.currencies.map(response =>  {
+            {Object.keys(this.store.rates).map((value, index) => {
             return (
-              <List.Item className={`${response.index+1 === this.state.activeIndex ? (`slider-item ${this.state.onSwipeDirection}`) : 'hide'}`}
-                value={response.value} >
-                {response.value}
+              <List.Item key={index} className={`${index+1 === this.state.activeIndex ? (`slider-item ${this.state.onSwipeDirection}`) : 'hide'}`} >
+                {value}
               </List.Item>
             )
           },this)
@@ -158,30 +146,23 @@ class SliderPanel extends React.Component {
             fluid
             transparent
             size='big'
-            placeholder="- -"
             type="number"
-            value={this.props.panelID === "from" ? this.props.data.fromValue : this.props.data.toValue}
-            onChange={event => this.updateOtherInput(this.props.panelID, event.target.value)}
+            value={this.props.panelID === "from" ? fromValue : toValue}
+            onChange={event => this.updateOtherInput(this.props.panelID, event.target.value, fromCurrencyCode)}
           />
         </div>
 
-            <List divided inverted verticalAlign='middle'>
-            <List.Item>
+          <List divided inverted verticalAlign='middle'>
+            <List.Item key={this.props.panelID}>
               {this.props.panelID === "to" && 
-                <List.Content 
-                floated='right'
-                className="white"
-                >
-                {this.renderCurrentRate()}
-              
-              </List.Content>
+                <CurrentExchangeRate store={this.store}/>
               }
 
               <List.Content
                 floated='left'
               >
-                {this.props.currencies.map(({ value }) => {
-                  if ((this.props.panelID === "from" ? this.props.data.fromCurrencyCode : this.props.data.toCurrencyCode) === value){
+                {Object.keys(this.store.rates).map((value) => {
+                  if ((this.props.panelID === "from" ? fromCurrencyCode : toCurrencyCode) === value){
                     return (
                       <span className="white" key={value}>
                           You have {toCurrencyString(this.store.wallets[value], value)}
@@ -195,9 +176,9 @@ class SliderPanel extends React.Component {
 
         <div className="indicators-wrapper">
           <ul className="indicators">
-            {this.props.currencies.map(response =>   {
+            {Object.keys(this.store.rates).map((value, index) => {
               return (
-                <li className={response.index+1 === this.state.activeIndex ? 'active-indicator' : ''} value={response.value} onClick={(e) => this.clickIndicator(e, response.value, this.props.panelID)} >{response.index+1}</li>
+                <li key={index} className={index+1 === this.state.activeIndex ? 'active-indicator' : ''} value={value} onClick={(e) => this.clickIndicator(e, value, this.props.panelID)} >{index+1}</li>
               )
             },this)}
           </ul>
