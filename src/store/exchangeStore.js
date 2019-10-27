@@ -72,22 +72,21 @@ class Store {
     const value = this.state.fromValue;
     const fromCurrencyCode = this.state.fromCurrencyCode;
     const toCurrencyCode = this.state.toCurrencyCode;
-    // console.log("toCurrencyCode", toCurrencyCode);
     let result;
     if (toCurrencyCode === "USD" && fromCurrencyCode === "USD") {
-      // console.log("to if 1");
+
       return value;
     } else if (toCurrencyCode === "USD") {
-      // console.log("to if 2");
+
       result = value * this.rates[toCurrencyCode];
-      // console.log("to USD result", this.rates[toCurrencyCode])
+
       return result.toFixed(2);
     } else if (fromCurrencyCode === "USD") {
-      // console.log("to if 3");
+
       result = value * this.rates[fromCurrencyCode];
       return result.toFixed(2);
     } else {
-      // console.log("to if 4");
+
       result =
         value / this.rates[fromCurrencyCode] * this.rates[toCurrencyCode];
       return result.toFixed(2);
@@ -101,21 +100,20 @@ class Store {
     const value = this.state.toValue;
     const toCurrencyCode = this.state.toCurrencyCode;
     const fromCurrencyCode = this.state.fromCurrencyCode;
-    // console.log("fromCurrencyCode", fromCurrencyCode);
     let result;
     if (fromCurrencyCode === "USD" && toCurrencyCode === "USD") {
-      // console.log("from if 1");
+
       return value;
     } else if (toCurrencyCode === "USD") {
-      // console.log("from if 2");
+
       result = value * this.rates[toCurrencyCode];
       return result.toFixed(2);
     } else if (fromCurrencyCode === "USD") {
-      // console.log("from if 3", this.rates[fromCurrencyCode]);
+
       result = value * this.rates[fromCurrencyCode];
       return result.toFixed(2);
     } else {
-      // console.log("from if 4");
+
       result =
         value / this.rates[toCurrencyCode] * this.rates[fromCurrencyCode];
       return result.toFixed(2);

@@ -158,7 +158,7 @@ class SliderPanel extends React.Component {
             fluid
             transparent
             size='big'
-            placeholder="100"
+            placeholder="- -"
             type="number"
             value={this.props.panelID === "from" ? this.props.data.fromValue : this.props.data.toValue}
             onChange={event => this.updateOtherInput(this.props.panelID, event.target.value)}

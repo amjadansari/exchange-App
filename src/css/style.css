@@ -66,7 +66,8 @@ body {
     padding: 10px 30px;
   }
   .to-currency {
-    background: #245ed9 !important;
+   background: rgb(36,94,217);
+background: linear-gradient(180deg, rgba(36,94,217,1) 0%, rgba(83,135,245,1) 89%);
   }
   .from-currency {
     margin-bottom: -30px;
@@ -155,6 +156,7 @@ body {
   }
 }
 .message {
+  color: #808080 !important;
   position: relative;
   -webkit-animation: slideBottom .2s linear;
     animation: slideBottom .2s linear;
@@ -241,4 +243,6 @@ body {
 .topLink {
   padding: 10px 15px 10px 10px !important;
 }
-
+.topLink a {
+  color: #fff !important;
+}
