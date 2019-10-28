@@ -103,8 +103,15 @@ class SliderPanel extends React.Component {
     })
   }
 
-  updateOtherInput = (panel, value, fromCurrencyCode) => {
+  updateOtherInput  = (event, panel, fromCurrencyCode) => {
     const fromWalletValue = this.store.wallets[fromCurrencyCode];
+    var tempValue = event.target.value;
+    var filtered = tempValue.replace(/[^0-9]/g, '');
+    if (filtered !== tempValue) {
+      event.target.value = filtered;
+    }
+    const value = Math.abs(event.target.value);
+
     if (panel === "from") { 
       this.store.setFromValue(value);
       this.store.setToValue(this.store.exchangeToRate);
@@ -113,9 +120,13 @@ class SliderPanel extends React.Component {
       this.store.setToValue(value);
       this.store.setFromValue(this.store.exchangeFromRate);
     }
+
     if (value > fromWalletValue) {
        this.store.setConversionError(true);
        this.store.setConversionMsg(`You don't have enough balance in ${fromCurrencyCode} Wallet`);
+    }
+    else if (value < fromWalletValue){
+      this.store.setConversionError(false);
     }
   }
   
@@ -126,6 +137,10 @@ class SliderPanel extends React.Component {
       fromCurrencyCode,
       toCurrencyCode,
     } = this.props.store.state;
+
+    const datafromValue = "+" + this.props.store.state.fromValue;
+    const datatoValue = "-" + this.props.store.state.toValue;
+
     return (
         <Swipe
             onSwipeMove={this.onSwipeMove}
@@ -146,9 +161,8 @@ class SliderPanel extends React.Component {
             fluid
             transparent
             size='big'
-            type="number"
-            value={this.props.panelID === "from" ? fromValue : toValue}
-            onChange={event => this.updateOtherInput(this.props.panelID, event.target.value, fromCurrencyCode)}
+            value={this.props.panelID === "from" ? datafromValue : datatoValue}
+            onChange={event => this.updateOtherInput(event, this.props.panelID, fromCurrencyCode)}
           />
         </div>
 
